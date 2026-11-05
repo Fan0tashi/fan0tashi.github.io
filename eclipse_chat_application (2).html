@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eclipse - Chat & Community</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="Eclipse.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        eclipse: {
+                            50: '#f0f4fe',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                            950: '#0b0e17'
+                        },
+                        darkCard: '#151a26',
+                        darkBorder: '#222b3e',
+                        robloxDark: '#111319',
+                        robloxCard: '#191b22',
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(11, 14, 23, 0.8); }
+        ::-webkit-scrollbar-thumb { background: #222b3e; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
+
+        /* Circular Logo Masking */
+        .eclipse-logo-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+            border: 2px solid rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-slide-up { animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade-in { animation: fadeIn 0.25s ease-out forwards; }
+
+        .tab-active {
+            color: #818cf8 !important;
+            border-top: 2.5px solid #6366f1;
+            background: linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0) 100%);
+        }
+
+        .glass-panel {
+            background: rgba(21, 26, 38, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(34, 43, 62, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-eclipse-950 text-slate-100 font-sans h-screen flex flex-col justify-between overflow-hidden select-none">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 left-4 sm:left-auto sm:w-96 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="flex-1 flex flex-col max-w-4xl w-full mx-auto h-full relative bg-eclipse-950 shadow-2xl border-x border-darkBorder">
+
+        <!-- HEADER BAR -->
+        <header id="appHeader" class="hidden h-16 glass-panel border-b border-darkBorder px-4 flex items-center justify-between shrink-0 z-20">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 relative">
+                    <img src="Eclipse.png" alt="Eclipse Logo" class="eclipse-logo-circle" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0b0e17/ffffff?text=E';">
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-white text-base tracking-wide flex items-center gap-2">
+                        ECLIPSE <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    </h1>
+                    <p id="headerSubtitle" class="text-[11px] text-slate-400">Global Lounge</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="logout()" title="Logout" class="w-9 h-9 rounded-xl bg-darkCard hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-all border border-darkBorder active:scale-95">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- AUTH SCREEN -->
+        <div id="authScreen" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div class="w-full max-w-md glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden animate-slide-up border border-darkBorder">
+                <div class="text-center mb-6 relative">
+                    <div class="w-20 h-20 mx-auto mb-3">
+                        <img src="Eclipse.png" alt="Eclipse Logo" class="eclipse-logo-circle" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0b0e17/ffffff?text=E';">
+                    </div>
+                    <h2 class="text-2xl font-bold text-white tracking-tight">Eclipse Network</h2>
+                    <p class="text-xs text-slate-400 mt-1">Cross-device live sync powered by Supabase</p>
+                </div>
+
+                <div class="flex bg-eclipse-950 p-1 rounded-xl mb-6 border border-darkBorder">
+                    <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-bold rounded-lg text-white bg-eclipse-600 shadow transition-all duration-200">Log In</button>
+                    <button id="tabSignup" onclick="switchAuthTab('signup')" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-all duration-200">Sign Up</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username or Email</label>
+                        <input type="text" id="loginUser" required placeholder="Enter username or email" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
+                        <input type="password" id="loginPass" required minlength="6" maxlength="20" placeholder="••••••••" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-eclipse-600 hover:bg-eclipse-500 active:scale-98 font-bold text-white text-xs rounded-xl shadow-lg shadow-eclipse-600/30 transition-all">
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username (Case-insensitive)</label>
+                        <input type="text" id="signupUser" required placeholder="e.g. Alex" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Email Address</label>
+                        <input type="email" id="signupEmail" required placeholder="alex@example.com" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password (6-20 characters)</label>
+                        <input type="password" id="signupPass" required minlength="6" maxlength="20" placeholder="••••••••" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-eclipse-600 hover:bg-eclipse-500 active:scale-98 font-bold text-white text-xs rounded-xl shadow-lg shadow-eclipse-600/30 transition-all">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MAIN APPLICATION CONTAINER -->
+        <main id="appContent" class="flex-1 flex flex-col min-h-0 relative hidden">
+            
+            <!-- TAB 1: GLOBAL CHAT VIEW -->
+            <section id="globalChatTab" class="flex-1 flex flex-col h-full min-h-0 animate-fade-in">
+                <div id="globalMessageFeed" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 flex flex-col-reverse">
+                    <!-- Global Messages Rendered Here (Newest on Top) -->
+                </div>
+
+                <div class="p-3 bg-eclipse-950 border-t border-darkBorder shrink-0">
+                    <form onsubmit="sendGlobalMessage(event)" class="flex items-center gap-2">
+                        <input type="text" id="globalInput" placeholder="Type a message in Global Chat..." required autocomplete="off" class="flex-1 bg-darkCard border border-darkBorder rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
+                        <button type="submit" class="w-11 h-11 rounded-2xl bg-eclipse-600 hover:bg-eclipse-500 active:scale-95 text-white flex items-center justify-center transition-all shadow-lg shadow-eclipse-600/30 shrink-0">
+                            <i class="fa-solid fa-paper-plane text-sm"></i>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- TAB 2: DMs & GROUP CHATS VIEW -->
+            <section id="dmsTab" class="flex-1 flex h-full min-h-0 animate-fade-in hidden">
+                <div id="dmSidebar" class="w-full sm:w-80 bg-robloxDark border-r border-darkBorder flex flex-col h-full shrink-0">
+                    <div class="p-3.5 border-b border-darkBorder flex items-center justify-between">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span>Messages</span>
+                        </h2>
+                        <button onclick="openCreateGroupModal()" class="px-2.5 py-1 bg-eclipse-600 hover:bg-eclipse-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow">
+                            <i class="fa-solid fa-users"></i> + Group
+                        </button>
+                    </div>
+
+                    <div class="p-2.5 border-b border-darkBorder/60">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                            <input type="text" id="dmSearchInput" oninput="filterDMSidebar()" placeholder="Search chats..." class="w-full bg-robloxCard border border-darkBorder/60 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div id="dmConversationList" class="flex-1 overflow-y-auto divide-y divide-darkBorder/40">
+                        <!-- Direct & Group Conversations Rendered Here -->
+                    </div>
+                </div>
+
+                <div id="dmChatPanel" class="hidden sm:flex flex-1 flex-col h-full bg-eclipse-950 min-h-0">
+                    <div id="dmHeader" class="p-3.5 bg-darkCard/80 border-b border-darkBorder flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-2.5">
+                            <button onclick="closeDMChatMobile()" class="sm:hidden text-slate-400 hover:text-white mr-1">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <div id="dmActiveAvatar" class="w-8 h-8 rounded-full bg-eclipse-600 text-white font-bold flex items-center justify-center text-xs overflow-hidden">?</div>
+                            <div>
+                                <h3 id="dmActiveUser" class="text-xs font-bold text-white">Select a Chat</h3>
+                                <p id="dmActiveStatus" class="text-[10px] text-emerald-400">Active</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dmMessageFeed" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 flex flex-col-reverse">
+                        <div class="h-full flex flex-col items-center justify-center text-slate-500 py-12">
+                            <i class="fa-regular fa-comments text-4xl mb-3 text-eclipse-500/40"></i>
+                            <p class="text-xs font-medium">Select a conversation to start chatting</p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-eclipse-950 border-t border-darkBorder shrink-0">
+                        <form onsubmit="sendDirectMessage(event)" class="flex items-center gap-2">
+                            <input type="text" id="dmInput" placeholder="Send a message..." disabled required autocomplete="off" class="flex-1 bg-darkCard border border-darkBorder rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all disabled:opacity-50">
+                            <button type="submit" id="dmSubmitBtn" disabled class="w-11 h-11 rounded-2xl bg-eclipse-600 hover:bg-eclipse-500 active:scale-95 text-white flex items-center justify-center transition-all shadow-lg shadow-eclipse-600/30 shrink-0 disabled:opacity-50">
+                                <i class="fa-solid fa-paper-plane text-sm"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: FRIENDS TAB -->
+            <section id="friendsTab" class="flex-1 flex flex-col h-full overflow-hidden p-4 sm:p-6 space-y-4 animate-fade-in hidden min-h-0">
+                <!-- Search & Send Bar -->
+                <div class="glass-panel border border-darkBorder rounded-2xl p-4 shrink-0">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-eclipse-400"></i> Add Friends by Email / Username
+                    </h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="friendSearchInput" placeholder="Enter username or email..." class="flex-1 bg-eclipse-950 border border-darkBorder rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-eclipse-500">
+                        <button onclick="searchAndAddFriend()" class="px-4 py-2 bg-eclipse-600 hover:bg-eclipse-500 text-white font-bold rounded-xl text-xs transition-all shadow">
+                            Send Request
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Two Divided Lists Container -->
+                <div class="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
+                    <!-- Section 1: Friend Requests -->
+                    <div class="glass-panel border border-darkBorder rounded-2xl p-4 shrink-0">
+                        <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                            <span><i class="fa-solid fa-clock mr-2"></i>Friend Requests</span>
+                            <span id="requestsCountBadge" class="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] rounded-full font-bold">0</span>
+                        </h3>
+                        <div id="friendRequestsList" class="space-y-2">
+                            <!-- Pending Incoming Requests Rendered Here -->
+                        </div>
+                    </div>
+
+                    <!-- Section 2: My Friends -->
+                    <div class="flex-1 flex flex-col glass-panel border border-darkBorder rounded-2xl p-4 min-h-0">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center justify-between shrink-0">
+                            <span><i class="fa-solid fa-user-group text-indigo-400 mr-2"></i>My Friends</span>
+                            <span id="friendsCountBadge" class="px-2 py-0.5 bg-eclipse-600/30 text-eclipse-300 text-[10px] rounded-full font-bold">0</span>
+                        </h3>
+
+                        <div id="friendsHorizontalList" class="flex-1 overflow-y-auto space-y-2.5 pr-1">
+                            <!-- Horizontal Friend Bars Rendered Here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: PROFILE & ADMIN VIEW -->
+        <section id="profileTab" class="flex-1 flex flex-col h-full overflow-y-auto p-4 sm:p-6 space-y-6 animate-fade-in hidden">
+            <div class="glass-panel border border-darkBorder rounded-3xl p-6 relative overflow-hidden shadow-2xl">
+                <div class="flex flex-col sm:flex-row items-center gap-6">
+                    <div class="flex flex-col items-center">
+                        <div class="relative w-24 h-24 mb-2">
+                            <div id="profileAvatarContainer" class="w-24 h-24 rounded-full border-2 border-eclipse-500 flex items-center justify-center text-3xl font-extrabold shadow-xl overflow-hidden">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 text-center sm:text-left space-y-2">
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                            <h2 id="profileUsername" class="text-2xl font-bold text-white tracking-tight">Username</h2>
+                            <span id="profileAdminBadge" class="hidden px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 text-[10px] font-bold uppercase tracking-wider">
+                                <i class="fa-solid fa-shield"></i> Admin
+                            </span>
+                        </div>
+                        <p id="profileEmail" class="text-xs text-slate-400 font-mono">email@domain.com</p>
+                        
+                        <div class="flex items-center justify-center sm:justify-start gap-6 pt-3 border-t border-darkBorder/60">
+                            <div class="text-center sm:text-left">
+                                <span id="statFriends" class="text-xl font-extrabold text-white block">0</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Friends</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- BOTTOM TAB NAVIGATION (4 TABS) -->
+        <nav id="bottomNav" class="hidden h-16 bg-eclipse-950 border-t border-darkBorder grid grid-cols-4 shrink-0 z-20">
+            <button id="navGlobal" onclick="switchMainTab('global')" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition-all tab-active">
+                <i class="fa-solid fa-earth-americas text-base"></i>
+                <span class="text-[10px] font-bold tracking-wide">Global</span>
+            </button>
+            <button id="navDMs" onclick="switchMainTab('dms')" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition-all">
+                <i class="fa-solid fa-comments text-base"></i>
+                <span class="text-[10px] font-bold tracking-wide">DMs & Groups</span>
+            </button>
+            <button id="navFriends" onclick="switchMainTab('friends')" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition-all">
+                <i class="fa-solid fa-user-group text-base"></i>
+                <span class="text-[10px] font-bold tracking-wide">Friends</span>
+            </button>
+            <button id="navProfile" onclick="switchMainTab('profile')" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition-all">
+                <i class="fa-solid fa-user text-base"></i>
+                <span class="text-[10px] font-bold tracking-wide">Profile</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- CREATE GROUP CHAT MODAL -->
+    <div id="createGroupModal" class="fixed inset-0 bg-eclipse-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel border border-darkBorder rounded-3xl max-w-sm w-full p-6 shadow-2xl relative animate-slide-up">
+            <button onclick="closeCreateGroupModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-4">Create Group Chat</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Group Name</label>
+                    <input type="text" id="groupNameInput" placeholder="e.g. Gamers Squad" class="w-full px-3 py-2 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white focus:outline-none focus:border-eclipse-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Select Friends to Add</label>
+                    <div id="groupMembersSelection" class="max-h-40 overflow-y-auto space-y-1.5 p-2 bg-eclipse-950 rounded-xl border border-darkBorder">
+                        <!-- Selectable friends listed here -->
+                    </div>
+                </div>
+                <button onclick="confirmCreateGroup()" class="w-full py-2.5 bg-eclipse-600 hover:bg-eclipse-500 text-white font-bold rounded-xl text-xs transition-all shadow">
+                    Create Group
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const SUPABASE_URL = 'https://qpqnmbhqjxtgoaekvqsa.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_hMYMiWm1ihQjc7L7tQSo6w_ZmWL_Q-H';
+        
+        let supabaseClient = null;
+        try {
+            if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (e) {
+            console.warn("Supabase init:", e);
+        }
+
+        const STORAGE_USERS = 'eclipse_users_v7';
+        const STORAGE_GLOBAL_MSGS = 'eclipse_global_msgs_v7';
+        const STORAGE_DM_MSGS = 'eclipse_dm_msgs_v7';
+        const STORAGE_GROUPS = 'eclipse_groups_v7';
+        const STORAGE_REQUESTS = 'eclipse_friend_requests_v7';
+        const STORAGE_CURRENT = 'eclipse_current_user_v7';
+
+        const TESTBOT_ACCOUNT = {
+            id: 'bot_testbot_01',
+            username: 'TestBot',
+            email: 'testbot@eclipse.internal',
+            password: '12345678',
+            isAdmin: true,
+            friends: []
+        };
+
+        let db = {
+            users: JSON.parse(localStorage.getItem(STORAGE_USERS)) || [],
+            globalMsgs: JSON.parse(localStorage.getItem(STORAGE_GLOBAL_MSGS)) || [],
+            dmMsgs: JSON.parse(localStorage.getItem(STORAGE_DM_MSGS)) || [],
+            groups: JSON.parse(localStorage.getItem(STORAGE_GROUPS)) || [],
+            friendRequests: JSON.parse(localStorage.getItem(STORAGE_REQUESTS)) || [],
+            currentUser: JSON.parse(localStorage.getItem(STORAGE_CURRENT)) || null
+        };
+
+        let activeTab = 'global';
+        let activeChatId = null; 
+        let activeChatType = 'dm'; // 'dm' or 'group'
+
+        (function init() {
+            const hasBot = db.users.some(u => u.username.toLowerCase() === 'testbot');
+            if (!hasBot) {
+                db.users.push(TESTBOT_ACCOUNT);
+                saveUsers();
+            }
+
+            if (db.currentUser) {
+                showAppInterface();
+            } else {
+                showAuthInterface();
+            }
+        })();
+
+        function saveUsers() { localStorage.setItem(STORAGE_USERS, JSON.stringify(db.users)); }
+        function saveGlobalMsgs() { localStorage.setItem(STORAGE_GLOBAL_MSGS, JSON.stringify(db.globalMsgs)); }
+        function saveDMMsgs() { localStorage.setItem(STORAGE_DM_MSGS, JSON.stringify(db.dmMsgs)); }
+        function saveGroups() { localStorage.setItem(STORAGE_GROUPS, JSON.stringify(db.groups)); }
+        function saveFriendRequests() { localStorage.setItem(STORAGE_REQUESTS, JSON.stringify(db.friendRequests)); }
+        function setCurrentUser(u) {
+            db.currentUser = u;
+            if (u) localStorage.setItem(STORAGE_CURRENT, JSON.stringify(u));
+            else localStorage.removeItem(STORAGE_CURRENT);
+        }
+
+        /* AUTHENTICATION */
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const tabLogin = document.getElementById('tabLogin');
+            const tabSignup = document.getElementById('tabSignup');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                tabLogin.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-white bg-eclipse-600 shadow transition-all duration-200';
+                tabSignup.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-all duration-200';
+            } else {
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                tabSignup.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-white bg-eclipse-600 shadow transition-all duration-200';
+                tabLogin.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-all duration-200';
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('loginUser').value.trim().toLowerCase();
+            const pass = document.getElementById('loginPass').value;
+
+            const foundUser = db.users.find(u => 
+                u.username.toLowerCase() === identifier || 
+                u.email.toLowerCase() === identifier
+            );
+
+            if (!foundUser || foundUser.password !== pass) {
+                showToast('Invalid login credentials.', 'error');
+                return;
+            }
+
+            setCurrentUser(foundUser);
+            showToast(`Welcome back, ${foundUser.username}!`, 'success');
+            showAppInterface();
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            const username = document.getElementById('signupUser').value.trim();
+            const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+            const password = document.getElementById('signupPass').value;
+
+            if (password.length < 6 || password.length > 20) {
+                showToast('Password must be 6-20 characters long.', 'error');
+                return;
+            }
+
+            const lowerUser = username.toLowerCase();
+            if (db.users.some(u => u.username.toLowerCase() === lowerUser)) {
+                showToast('Username already taken!', 'error');
+                return;
+            }
+
+            const nonBotUsers = db.users.filter(u => u.id !== 'bot_testbot_01');
+            const isFirstUserAdmin = nonBotUsers.length === 0;
+
+            const newUser = {
+                id: 'usr_' + Date.now(),
+                username: username,
+                email: email,
+                password: password,
+                isAdmin: isFirstUserAdmin,
+                friends: []
+            };
+
+            db.users.push(newUser);
+            saveUsers();
+            setCurrentUser(newUser);
+            showToast('Account created!', 'success');
+            showAppInterface();
+        }
+
+        function logout() {
+            setCurrentUser(null);
+            showAuthInterface();
+        }
+
+        /* NAVIGATION */
+        function showAuthInterface() {
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('appHeader').classList.add('hidden');
+            document.getElementById('appContent').classList.add('hidden');
+            document.getElementById('bottomNav').classList.add('hidden');
+        }
+
+        function showAppInterface() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appHeader').classList.remove('hidden');
+            document.getElementById('appContent').classList.remove('hidden');
+            document.getElementById('bottomNav').classList.remove('hidden');
+
+            switchMainTab('global');
+        }
+
+        function switchMainTab(tab) {
+            activeTab = tab;
+            const globalTab = document.getElementById('globalChatTab');
+            const dmsTab = document.getElementById('dmsTab');
+            const friendsTab = document.getElementById('friendsTab');
+            const profileTab = document.getElementById('profileTab');
+            
+            const navGlobal = document.getElementById('navGlobal');
+            const navDMs = document.getElementById('navDMs');
+            const navFriends = document.getElementById('navFriends');
+            const navProfile = document.getElementById('navProfile');
+
+            globalTab.classList.add('hidden');
+            dmsTab.classList.add('hidden');
+            friendsTab.classList.add('hidden');
+            profileTab.classList.add('hidden');
+
+            navGlobal.classList.remove('tab-active');
+            navDMs.classList.remove('tab-active');
+            navFriends.classList.remove('tab-active');
+            navProfile.classList.remove('tab-active');
+
+            if (tab === 'global') {
+                globalTab.classList.remove('hidden');
+                navGlobal.classList.add('tab-active');
+                document.getElementById('headerSubtitle').innerText = 'Global Lounge';
+                renderGlobalMessages();
+            } else if (tab === 'dms') {
+                dmsTab.classList.remove('hidden');
+                navDMs.classList.add('tab-active');
+                document.getElementById('headerSubtitle').innerText = 'DMs & Groups';
+                renderDMSidebar();
+            } else if (tab === 'friends') {
+                friendsTab.classList.remove('hidden');
+                navFriends.classList.add('tab-active');
+                document.getElementById('headerSubtitle').innerText = 'Friends List';
+                renderFriendsTab();
+            } else if (tab === 'profile') {
+                profileTab.classList.remove('hidden');
+                navProfile.classList.add('tab-active');
+                document.getElementById('headerSubtitle').innerText = 'Profile & Moderation';
+                renderProfileTab();
+            }
+        }
+
+        /* GLOBAL CHAT ENGINE (Newest Messages on Top) */
+        function renderGlobalMessages() {
+            const feed = document.getElementById('globalMessageFeed');
+            feed.innerHTML = '';
+
+            if (db.globalMsgs.length === 0) {
+                feed.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-slate-500 py-12">
+                        <i class="fa-regular fa-paper-plane text-4xl mb-3 text-eclipse-500/40"></i>
+                        <p class="text-xs font-medium">No messages yet in Global Chat!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const sorted = [...db.globalMsgs].reverse();
+
+            sorted.forEach(msg => {
+                const isMe = msg.senderId === db.currentUser.id;
+                const isAdmin = db.currentUser && db.currentUser.isAdmin;
+                const senderUser = db.users.find(u => u.id === msg.senderId);
+                
+                const avatarHtml = getAvatarIconHtml(senderUser, 'w-6 h-6 text-[10px]');
+
+                const msgEl = document.createElement('div');
+                msgEl.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} group mb-2 animate-fade-in`;
+
+                msgEl.innerHTML = `
+                    <div class="flex items-center gap-1.5 mb-1">
+                        ${avatarHtml}
+                        <span class="text-[11px] font-bold ${isMe ? 'text-eclipse-400' : 'text-indigo-400'}">
+                            ${escapeHTML(msg.senderName)}
+                        </span>
+                        <span class="text-[9px] text-slate-500 font-mono">${formatTime(msg.timestamp)}</span>
+                        ${isAdmin ? `
+                            <button onclick="deleteGlobalMessage('${msg.id}')" title="Delete Message (Admin)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-[10px] ml-1 transition-all">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <div class="max-w-[85%] sm:max-w-[70%] px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${isMe ? 'bg-eclipse-600 text-white rounded-tr-none' : 'bg-darkCard text-slate-100 border border-darkBorder rounded-tl-none'} shadow-md">
+                        ${escapeHTML(msg.text)}
+                    </div>
+                    ${!isMe ? `
+                        <div class="text-[9px] text-indigo-400 font-medium mt-0.5 flex items-center gap-1">
+                            <i class="fa-solid fa-check-double text-[8px]"></i> Read
+                        </div>
+                    ` : ''}
+                `;
+                feed.appendChild(msgEl);
+            });
+        }
+
+        function sendGlobalMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('globalInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const newMsg = {
+                id: 'gmsg_' + Date.now(),
+                senderId: db.currentUser.id,
+                senderName: db.currentUser.username,
+                text: text,
+                timestamp: Date.now()
+            };
+
+            db.globalMsgs.push(newMsg);
+            saveGlobalMsgs();
+            input.value = '';
+            renderGlobalMessages();
+        }
+
+        function deleteGlobalMessage(msgId) {
+            if (!db.currentUser || !db.currentUser.isAdmin) return;
+            db.globalMsgs = db.globalMsgs.filter(m => m.id !== msgId);
+            saveGlobalMsgs();
+            renderGlobalMessages();
+        }
+
+        /* DM & GROUPCHAT SIDEBAR */
+        function renderDMSidebar() {
+            const container = document.getElementById('dmConversationList');
+            container.innerHTML = '';
+
+            const userGroups = db.groups.filter(g => g.members.includes(db.currentUser.id));
+            userGroups.forEach(group => {
+                const thread = db.dmMsgs.filter(m => m.groupId === group.id);
+                const lastMsg = thread[thread.length - 1];
+                const snippet = lastMsg ? `${lastMsg.senderName}: ${lastMsg.text}` : 'Group created';
+                const timeStr = lastMsg ? formatRelativeTime(lastMsg.timestamp) : '';
+                const isActive = activeChatId === group.id && activeChatType === 'group';
+
+                const card = document.createElement('div');
+                card.className = `p-3 flex items-center gap-3 cursor-pointer transition-all ${isActive ? 'bg-robloxCard border-l-4 border-eclipse-500' : 'hover:bg-robloxCard/50'}`;
+                card.onclick = () => openGroupChat(group.id);
+
+                card.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold flex items-center justify-center text-sm shrink-0">
+                        <i class="fa-solid fa-users text-xs"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-slate-100 truncate">${escapeHTML(group.name)}</h4>
+                            <span class="text-[10px] text-slate-500 font-mono">${timeStr}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 truncate mt-0.5">${escapeHTML(snippet)}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            const otherUsers = db.users.filter(u => u.id !== db.currentUser.id);
+            otherUsers.forEach(user => {
+                const thread = db.dmMsgs.filter(m => 
+                    !m.groupId && (
+                        (m.senderId === db.currentUser.id && m.recipientId === user.id) ||
+                        (m.senderId === user.id && m.recipientId === db.currentUser.id)
+                    )
+                );
+
+                const lastMsg = thread[thread.length - 1];
+                const snippet = lastMsg ? (lastMsg.senderId === db.currentUser.id ? `You: ${lastMsg.text}` : lastMsg.text) : 'Start a chat';
+                const timeStr = lastMsg ? formatRelativeTime(lastMsg.timestamp) : '';
+                const isActive = activeChatId === user.id && activeChatType === 'dm';
+                const avatarHtml = getAvatarIconHtml(user, 'w-10 h-10 text-sm');
+
+                const card = document.createElement('div');
+                card.className = `p-3 flex items-center gap-3 cursor-pointer transition-all ${isActive ? 'bg-robloxCard border-l-4 border-eclipse-500' : 'hover:bg-robloxCard/50'}`;
+                card.onclick = () => openDMChat(user.id);
+
+                card.innerHTML = `
+                    <div class="shrink-0">${avatarHtml}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-slate-100 truncate">${escapeHTML(user.username)}</h4>
+                            <span class="text-[10px] text-slate-500 font-mono">${timeStr}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 truncate mt-0.5">${escapeHTML(snippet)}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterDMSidebar() {
+            const query = document.getElementById('dmSearchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('#dmConversationList > div');
+            cards.forEach(card => {
+                const name = card.querySelector('h4').innerText.toLowerCase();
+                if (name.includes(query)) card.style.display = 'flex';
+                else card.style.display = 'none';
+            });
+        }
+
+        function openDMChat(targetUserId) {
+            activeChatId = targetUserId;
+            activeChatType = 'dm';
+            renderDMSidebar();
+
+            const targetUser = db.users.find(u => u.id === targetUserId);
+            if (!targetUser) return;
+
+            document.getElementById('dmActiveAvatar').innerHTML = getAvatarIconHtml(targetUser, 'w-8 h-8 text-xs');
+            document.getElementById('dmActiveUser').innerText = targetUser.username;
+            
+            document.getElementById('dmInput').disabled = false;
+            document.getElementById('dmSubmitBtn').disabled = false;
+
+            const chatPanel = document.getElementById('dmChatPanel');
+            chatPanel.classList.remove('hidden');
+            chatPanel.classList.add('flex');
+
+            renderDMMessages();
+        }
+
+        function openGroupChat(groupId) {
+            activeChatId = groupId;
+            activeChatType = 'group';
+            renderDMSidebar();
+
+            const group = db.groups.find(g => g.id === groupId);
+            if (!group) return;
+
+            document.getElementById('dmActiveAvatar').innerHTML = `<div class="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs"><i class="fa-solid fa-users"></i></div>`;
+            document.getElementById('dmActiveUser').innerText = group.name;
+            
+            document.getElementById('dmInput').disabled = false;
+            document.getElementById('dmSubmitBtn').disabled = false;
+
+            const chatPanel = document.getElementById('dmChatPanel');
+            chatPanel.classList.remove('hidden');
+            chatPanel.classList.add('flex');
+
+            renderDMMessages();
+        }
+
+        function closeDMChatMobile() {
+            const chatPanel = document.getElementById('dmChatPanel');
+            chatPanel.classList.add('hidden');
+            chatPanel.classList.remove('flex');
+            activeChatId = null;
+            renderDMSidebar();
+        }
+
+        function renderDMMessages() {
+            if (!activeChatId) return;
+            const feed = document.getElementById('dmMessageFeed');
+            feed.innerHTML = '';
+
+            let thread = [];
+            if (activeChatType === 'dm') {
+                thread = db.dmMsgs.filter(m => 
+                    !m.groupId && (
+                        (m.senderId === db.currentUser.id && m.recipientId === activeChatId) ||
+                        (m.senderId === activeChatId && m.recipientId === db.currentUser.id)
+                    )
+                );
+            } else {
+                thread = db.dmMsgs.filter(m => m.groupId === activeChatId);
+            }
+
+            if (thread.length === 0) {
+                feed.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-slate-500 py-12">
+                        <i class="fa-regular fa-paper-plane text-4xl mb-3 text-eclipse-500/40"></i>
+                        <p class="text-xs font-medium">Send your first message!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const sorted = [...thread].reverse();
+
+            sorted.forEach(msg => {
+                const isMe = msg.senderId === db.currentUser.id;
+                const isAdmin = db.currentUser && db.currentUser.isAdmin;
+                
+                const msgEl = document.createElement('div');
+                msgEl.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} group mb-2 animate-fade-in`;
+
+                msgEl.innerHTML = `
+                    <div class="flex items-center gap-1.5 mb-1">
+                        ${activeChatType === 'group' && !isMe ? `<span class="text-[10px] font-bold text-indigo-400">${escapeHTML(msg.senderName)}</span>` : ''}
+                        <span class="text-[9px] text-slate-500 font-mono">${formatTime(msg.timestamp)}</span>
+                        ${isAdmin ? `
+                            <button onclick="deleteDMMessage('${msg.id}')" title="Delete Message (Admin)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-[10px] ml-1 transition-all">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <div class="max-w-[85%] sm:max-w-[70%] px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${isMe ? 'bg-eclipse-600 text-white rounded-tr-none' : 'bg-darkCard text-slate-100 border border-darkBorder rounded-tl-none'} shadow-md">
+                        ${escapeHTML(msg.text)}
+                    </div>
+                    ${!isMe ? `
+                        <div class="text-[9px] text-indigo-400 font-medium mt-0.5 flex items-center gap-1">
+                            <i class="fa-solid fa-check-double text-[8px]"></i> Read
+                        </div>
+                    ` : ''}
+                `;
+                feed.appendChild(msgEl);
+            });
+        }
+
+        function sendDirectMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('dmInput');
+            const text = input.value.trim();
+            if (!text || !activeChatId) return;
+
+            const newMsg = {
+                id: 'dm_' + Date.now(),
+                senderId: db.currentUser.id,
+                senderName: db.currentUser.username,
+                recipientId: activeChatType === 'dm' ? activeChatId : null,
+                groupId: activeChatType === 'group' ? activeChatId : null,
+                text: text,
+                timestamp: Date.now()
+            };
+
+            db.dmMsgs.push(newMsg);
+            saveDMMsgs();
+            input.value = '';
+            renderDMMessages();
+            renderDMSidebar();
+        }
+
+        function deleteDMMessage(msgId) {
+            if (!db.currentUser || !db.currentUser.isAdmin) return;
+            db.dmMsgs = db.dmMsgs.filter(m => m.id !== msgId);
+            saveDMMsgs();
+            renderDMMessages();
+            renderDMSidebar();
+        }
+
+        /* FRIENDS TAB (REQUESTS & MY FRIENDS) */
+        function renderFriendsTab() {
+            renderFriendRequests();
+            renderMyFriendsList();
+        }
+
+        function renderFriendRequests() {
+            const container = document.getElementById('friendRequestsList');
+            container.innerHTML = '';
+
+            const incomingRequests = db.friendRequests.filter(req => req.toUserId === db.currentUser.id && req.status === 'pending');
+            document.getElementById('requestsCountBadge').innerText = incomingRequests.length;
+
+            if (incomingRequests.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-2">No pending friend requests.</p>`;
+                return;
+            }
+
+            incomingRequests.forEach(req => {
+                const sender = db.users.find(u => u.id === req.fromUserId);
+                if (!sender) return;
+
+                const avatarHtml = getAvatarIconHtml(sender, 'w-9 h-9 text-xs');
+
+                const card = document.createElement('div');
+                card.className = 'flex items-center justify-between bg-eclipse-950 p-2.5 rounded-xl border border-darkBorder hover:border-amber-500/30 transition-all';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        ${avatarHtml}
+                        <div>
+                            <h4 class="text-xs font-bold text-white">${escapeHTML(sender.username)}</h4>
+                            <p class="text-[10px] text-slate-400 font-mono">${escapeHTML(sender.email)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="acceptFriendRequest('${req.id}')" title="Accept Request" class="w-8 h-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-xs transition-all active:scale-95">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                        <button onclick="declineFriendRequest('${req.id}')" title="Decline Request" class="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 flex items-center justify-center text-xs transition-all active:scale-95">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderMyFriendsList() {
+            const container = document.getElementById('friendsHorizontalList');
+            container.innerHTML = '';
+
+            const friends = (db.currentUser.friends || []).map(fId => db.users.find(u => u.id === fId)).filter(Boolean);
+            document.getElementById('friendsCountBadge').innerText = friends.length;
+
+            if (friends.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 py-6 text-center">No friends added yet. Search by username or email above!</p>`;
+                return;
+            }
+
+            friends.forEach(friend => {
+                const avatarHtml = getAvatarIconHtml(friend, 'w-10 h-10 text-sm');
+
+                const bar = document.createElement('div');
+                bar.className = 'flex items-center justify-between bg-eclipse-950 p-3 rounded-xl border border-darkBorder hover:border-eclipse-500/40 transition-all';
+                bar.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        ${avatarHtml}
+                        <div>
+                            <h4 class="text-xs font-bold text-white leading-tight">${escapeHTML(friend.username)}</h4>
+                            <p class="text-[10px] text-slate-400 font-mono">${escapeHTML(friend.email)}</p>
+                        </div>
+                    </div>
+                    <button onclick="startDMFromFriend('${friend.id}')" class="px-3.5 py-1.5 bg-eclipse-600 hover:bg-eclipse-500 text-white rounded-xl text-xs font-bold transition-all shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane text-[10px]"></i> Message
+                    </button>
+                `;
+                container.appendChild(bar);
+            });
+        }
+
+        function searchAndAddFriend() {
+            const query = document.getElementById('friendSearchInput').value.trim().toLowerCase();
+            if (!query) return;
+
+            const foundUser = db.users.find(u => 
+                u.id !== db.currentUser.id && 
+                (u.username.toLowerCase() === query || u.email.toLowerCase() === query)
+            );
+
+            if (!foundUser) {
+                showToast('User not found.', 'error');
+                return;
+            }
+
+            if (!db.currentUser.friends) db.currentUser.friends = [];
+            if (db.currentUser.friends.includes(foundUser.id)) {
+                showToast('Already in your friends list!', 'info');
+                return;
+            }
+
+            const existingReq = db.friendRequests.find(r => 
+                (r.fromUserId === db.currentUser.id && r.toUserId === foundUser.id) ||
+                (r.fromUserId === foundUser.id && r.toUserId === db.currentUser.id)
+            );
+
+            if (existingReq) {
+                showToast('A friend request is already pending!', 'info');
+                return;
+            }
+
+            db.friendRequests.push({
+                id: 'freq_' + Date.now(),
+                fromUserId: db.currentUser.id,
+                toUserId: foundUser.id,
+                status: 'pending'
+            });
+
+            saveFriendRequests();
+            document.getElementById('friendSearchInput').value = '';
+            showToast(`Sent friend request to ${foundUser.username}!`, 'success');
+            renderFriendsTab();
+        }
+
+        function acceptFriendRequest(reqId) {
+            const req = db.friendRequests.find(r => r.id === reqId);
+            if (!req) return;
+
+            req.status = 'accepted';
+
+            const sender = db.users.find(u => u.id === req.fromUserId);
+            const receiver = db.users.find(u => u.id === req.toUserId);
+
+            if (sender && receiver) {
+                if (!sender.friends) sender.friends = [];
+                if (!receiver.friends) receiver.friends = [];
+
+                if (!sender.friends.includes(receiver.id)) sender.friends.push(receiver.id);
+                if (!receiver.friends.includes(sender.id)) receiver.friends.push(sender.id);
+
+                saveUsers();
+                if (db.currentUser.id === receiver.id) setCurrentUser(receiver);
+                if (db.currentUser.id === sender.id) setCurrentUser(sender);
+            }
+
+            db.friendRequests = db.friendRequests.filter(r => r.id !== reqId);
+            saveFriendRequests();
+            renderFriendsTab();
+            showToast('Friend request accepted!', 'success');
+        }
+
+        function declineFriendRequest(reqId) {
+            db.friendRequests = db.friendRequests.filter(r => r.id !== reqId);
+            saveFriendRequests();
+            renderFriendsTab();
+            showToast('Friend request declined.', 'info');
+        }
+
+        function startDMFromFriend(friendId) {
+            switchMainTab('dms');
+            openDMChat(friendId);
+        }
+
+        /* GROUP CHAT MODAL LOGIC */
+        function openCreateGroupModal() {
+            const container = document.getElementById('groupMembersSelection');
+            container.innerHTML = '';
+            const friends = db.currentUser.friends || [];
+
+            if (friends.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 p-2 text-center">Add some friends first!</p>`;
+            } else {
+                friends.forEach(fId => {
+                    const f = db.users.find(u => u.id === fId);
+                    if (f) {
+                        container.innerHTML += `
+                            <label class="flex items-center gap-2 text-xs text-slate-200 p-1.5 hover:bg-darkCard rounded-lg cursor-pointer">
+                                <input type="checkbox" value="${f.id}" class="group-friend-checkbox rounded accent-indigo-500">
+                                <span>${escapeHTML(f.username)}</span>
+                            </label>
+                        `;
+                    }
+                });
+            }
+            document.getElementById('createGroupModal').classList.remove('hidden');
+        }
+
+        function closeCreateGroupModal() {
+            document.getElementById('createGroupModal').classList.add('hidden');
+        }
+
+        function confirmCreateGroup() {
+            const name = document.getElementById('groupNameInput').value.trim();
+            if (!name) return showToast('Enter a group name.', 'error');
+
+            const checkboxes = document.querySelectorAll('.group-friend-checkbox:checked');
+            const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+
+            selectedIds.push(db.currentUser.id);
+
+            const newGroup = {
+                id: 'grp_' + Date.now(),
+                name: name,
+                members: selectedIds,
+                createdBy: db.currentUser.id
+            };
+
+            db.groups.push(newGroup);
+            saveGroups();
+            closeCreateGroupModal();
+            showToast(`Group "${name}" created!`, 'success');
+            renderDMSidebar();
+            openGroupChat(newGroup.id);
+        }
+
+        /* PROFILE & ADMIN AVATAR APPROVAL QUEUE */
+        function renderProfileTab() {
+            if (!db.currentUser) return;
+            const u = db.currentUser;
+
+            document.getElementById('profileAvatarContainer').innerHTML = getAvatarIconHtml(u, 'w-full h-full text-3xl');
+            document.getElementById('profileUsername').innerText = u.username;
+            document.getElementById('profileEmail').innerText = u.email;
+
+            const adminBadge = document.getElementById('profileAdminBadge');
+            if (u.isAdmin) adminBadge.classList.remove('hidden');
+            else adminBadge.classList.add('hidden');
+
+            document.getElementById('statFriends').innerText = (u.friends || []).length;
+
+            const statusBadge = document.getElementById('avatarStatusBadge');
+            if (u.avatarStatus === 'pending') {
+                statusBadge.className = 'mt-2 text-[10px] font-bold text-amber-400 flex items-center justify-center gap-1';
+                statusBadge.innerHTML = `<i class="fa-solid fa-clock"></i> Icon Pending Admin Approval`;
+            } else if (u.avatarStatus === 'approved') {
+                statusBadge.className = 'mt-2 text-[10px] font-bold text-emerald-400 flex items-center justify-center gap-1';
+                statusBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Icon Approved`;
+            } else {
+                statusBadge.innerText = '';
+            }
+
+            const adminSec = document.getElementById('adminApprovalSection');
+            if (u.isAdmin) {
+                adminSec.classList.remove('hidden');
+                renderAdminAvatarQueue();
+            } else {
+                adminSec.classList.add('hidden');
+            }
+        }
+
+        async function uploadProfileAvatar(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const btn = document.getElementById('changeIconBtn');
+            btn.innerText = 'Compressing...';
+
+            // Canvas compression to 150x150 JPEG Base64
+            const compressedBase64 = await compressImageToCanvas(file, 150, 150, 0.7);
+            btn.innerHTML = `<i class="fa-solid fa-camera"></i> Change Icon`;
+
+            db.currentUser.avatarUrl = compressedBase64;
+            db.currentUser.avatarStatus = 'pending';
+            
+            const target = db.users.find(u => u.id === db.currentUser.id);
+            if (target) {
+                target.avatarUrl = compressedBase64;
+                target.avatarStatus = 'pending';
+            }
+
+            saveUsers();
+            setCurrentUser(db.currentUser);
+            renderProfileTab();
+            showToast('Icon uploaded! Submitted to Admin for review.', 'info');
+        }
+
+        function compressImageToCanvas(file, maxWidth, maxHeight, quality) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = maxWidth;
+                        canvas.height = maxHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, maxWidth, maxHeight);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                };
+            });
+        }
+
+        function renderAdminAvatarQueue() {
+            const container = document.getElementById('pendingAvatarsQueue');
+            container.innerHTML = '';
+
+            const pendingUsers = db.users.filter(u => u.avatarStatus === 'pending' && u.avatarUrl);
+
+            if (pendingUsers.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 py-2 text-center">No pending avatar approvals.</p>`;
+                return;
+            }
+
+            pendingUsers.forEach(u => {
+                const card = document.createElement('div');
+                card.className = 'flex items-center justify-between bg-eclipse-950 p-2.5 rounded-xl border border-darkBorder';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${u.avatarUrl}" class="w-10 h-10 rounded-full object-cover border border-indigo-500" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-10 h-10 rounded-full bg-eclipse-600/30 text-indigo-300 font-bold flex items-center justify-center text-sm\'>${u.username.charAt(0).toUpperCase()}</div>';">
+                        <div>
+                            <p class="text-xs font-bold text-white">${escapeHTML(u.username)}</p>
+                            <p class="text-[10px] text-slate-400 font-mono">${escapeHTML(u.email)}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <button onclick="approveAvatar('${u.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs shadow">Approve</button>
+                        <button onclick="rejectAvatar('${u.id}')" class="px-3 py-1 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg text-xs shadow">Reject</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        /* PROFILE VIEW */
+        function renderProfileTab() {
+            if (!db.currentUser) return;
+            const u = db.currentUser;
+
+            document.getElementById('profileAvatarContainer').innerHTML = getAvatarIconHtml(u, 'w-full h-full text-3xl');
+            document.getElementById('profileUsername').innerText = u.username;
+            document.getElementById('profileEmail').innerText = u.email;
+
+            const adminBadge = document.getElementById('profileAdminBadge');
+            if (u.isAdmin) adminBadge.classList.remove('hidden');
+            else adminBadge.classList.add('hidden');
+
+            document.getElementById('statFriends').innerText = (u.friends || []).length;
+        }
+
+        /* AVATAR GENERATOR WITH CONSISTENT COLOR BADGES */
+        function getAvatarIconHtml(userObj, sizeClasses = 'w-8 h-8 text-xs') {
+            const username = userObj && userObj.username ? userObj.username : '?';
+            const initial = username.charAt(0).toUpperCase();
+
+            // Generate deterministic color palette based on username length and chars
+            const colors = [
+                'bg-indigo-600 border-indigo-400 text-indigo-100',
+                'bg-purple-600 border-purple-400 text-purple-100',
+                'bg-blue-600 border-blue-400 text-blue-100',
+                'bg-emerald-600 border-emerald-400 text-emerald-100',
+                'bg-rose-600 border-rose-400 text-rose-100',
+                'bg-amber-600 border-amber-400 text-amber-100',
+                'bg-cyan-600 border-cyan-400 text-cyan-100'
+            ];
+            
+            let charCodeSum = 0;
+            for (let i = 0; i < username.length; i++) {
+                charCodeSum += username.charCodeAt(i);
+            }
+            const colorClass = colors[charCodeSum % colors.length];
+
+            return `<div class="${sizeClasses} rounded-full ${colorClass} border font-extrabold flex items-center justify-center shrink-0 shadow-md">${initial}</div>`;
+        }
+
+        /* HELPERS */
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-darkCard border-darkBorder text-slate-200';
+            if (type === 'success') bg = 'bg-emerald-950/90 border-emerald-600/50 text-emerald-200';
+            if (type === 'error') bg = 'bg-red-950/90 border-red-600/50 text-red-200';
+
+            toast.className = `p-3.5 rounded-2xl border ${bg} shadow-2xl text-xs font-bold flex items-center justify-between transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto backdrop-blur-md`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function formatTime(timestamp) {
+            return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatRelativeTime(timestamp) {
+            const diff = (Date.now() - timestamp) / 1000;
+            if (diff < 60) return 'Now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+            return `${Math.floor(diff / 86400)}d`;
+        }
+
+        function escapeHTML(str) {
+            return String(str).replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+    </script>
+</body>
+</html>
