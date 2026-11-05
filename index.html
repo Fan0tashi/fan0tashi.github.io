@@ -500,7 +500,9 @@
           .on('postgres_changes', { event: '*', schema: 'public', table: 'global_messages' }, () => {
             if (activeTab === 'global') renderGlobalMessages();
           })
-          .subscribe();
+          .subscribe((status, err) => {
+            if (err) console.log("Realtime connection notice: Falling back to HTTP polling mode.");
+          });
 
         supabaseClient.channel('direct_messages_realtime')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'direct_messages' }, () => {
@@ -518,8 +520,19 @@
           })
           .subscribe();
       } catch (err) {
-        console.warn("Realtime WebSockets restricted in sandbox preview. App running in standard cloud database mode.");
+        console.log("WebSocket restricted in canvas environment. Using cloud REST polling.");
       }
+
+      // Fallback polling interval to ensure snappy multi-device sync without WebSockets
+      setInterval(() => {
+        if (!currentUser) return;
+        if (activeTab === 'global') renderGlobalMessages();
+        if (activeTab === 'dms') {
+          renderDMSidebar();
+          if (activeChatId) renderDMMessages();
+        }
+        if (activeTab === 'friends') renderFriendsTab();
+      }, 3000);
     }
 
     /* TAB NAVIGATION */
