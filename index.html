@@ -1,1080 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Eclipse Chat</title>
-  <link rel="icon" type="image/png" href="Eclipse.png">
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            eclipse: {
-              50: '#f0f4fe',
-              400: '#818cf8',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-              900: '#1e1b4b',
-              950: '#0b0e14'
-            },
-            darkCard: '#151a23',
-            darkBorder: '#1f2937',
-            robloxDark: '#0b0e14',
-            robloxCard: '#151a23',
-          },
-          fontFamily: {
-            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    /* Custom Scrollbars */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: rgba(11, 14, 20, 0.8); }
-    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
-
-    .eclipse-logo-circle {
-      width: 100%;
-      height: 100%;
-      border-radius: 50% !important;
-      object-fit: cover !important;
-      border: 2px solid rgba(99, 102, 241, 0.4);
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
-    }
-
-    @keyframes slideInUp {
-      from { opacity: 0; transform: translateY(12px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    .animate-slide-up { animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .animate-fade-in { animation: fadeIn 0.25s ease-out forwards; }
-
-    .tab-active {
-      color: #818cf8 !important;
-      border-top: 2.5px solid #6366f1;
-      background: linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0) 100%);
-    }
-
-    .glass-panel {
-      background: rgba(21, 26, 35, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(31, 41, 55, 0.8);
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenTricky - Play SSX Tricky on Your PC (Unofficial PC Port)</title>
+<meta name="description" content="OpenTricky is an unofficial PC port of SSX Tricky built with static recompilation. Download OpenTricky on Windows, bring your own disc, and hit the slopes in HD with mod support.">
+<meta name="keywords" content="OpenTricky, SSX Tricky PC port, SSX Tricky download, static recompilation, snowboarding game PC, Steam Deck SSX, Vulkan, Direct3D 11, SSX modding, Xbox SSX Tricky">
+<meta name="author" content="OpenTricky Project">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#7c3aed">
+<link rel="canonical" href="https://github.com/Fan0tashi/OpenTricky">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="OpenTricky">
+<meta property="og:title" content="OpenTricky - Play SSX Tricky on Your PC">
+<meta property="og:description" content="An unofficial PC port of SSX Tricky made by static recompilation. Download it, bring your own disc, and ride again on Windows, Linux and Steam Deck.">
+<meta property="og:url" content="https://github.com/Fan0tashi/OpenTricky">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OpenTricky - Play SSX Tricky on Your PC">
+<meta name="twitter:description" content="Unofficial PC port of SSX Tricky via static recompilation. Bring your own disc and snowboard again.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "OpenTricky",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Windows, Linux, Steam Deck",
+  "description": "OpenTricky is an unofficial PC port of SSX Tricky, made by static recompilation. Bring your own disc.",
+  "url": "https://github.com/Fan0tashi/OpenTricky",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: #f5f6fb;
+    color: #22242e;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #6d28d9; }
+  a:hover { color: #db2777; }
+  .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .btn { transition: all 0.2s ease; }
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    h1 { font-size: 1.85rem !important; }
+    h2 { font-size: 1.35rem !important; }
+  }
+</style>
 </head>
-<body class="bg-eclipse-950 text-slate-100 font-sans h-screen flex flex-col justify-between overflow-hidden select-none">
+<body>
 
-  <!-- Toast Notification Container -->
-  <div id="toastContainer" class="fixed top-4 right-4 left-4 sm:left-auto sm:w-96 z-50 pointer-events-none flex flex-col gap-2"></div>
+<main style="max-width: 880px; margin: 0 auto; padding: 32px 20px 64px 20px;">
 
-  <!-- MAIN APP CONTAINER -->
-  <div class="flex-1 flex flex-col max-w-4xl w-full mx-auto h-full relative bg-eclipse-950 shadow-2xl border-x border-darkBorder">
+  <header style="text-align: center; padding: 28px 20px 36px 20px; background: #ffffff; border-radius: 18px; box-shadow: 0 8px 28px rgba(35, 28, 70, 0.08);">
 
-    <!-- HEADER BAR -->
-    <header id="appHeader" class="hidden h-16 glass-panel border-b border-darkBorder px-4 flex items-center justify-between shrink-0 z-20">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 relative">
-          <img src="Eclipse.png" alt="Eclipse Logo" class="eclipse-logo-circle" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0b0e14/ffffff?text=E';">
-        </div>
-        <div>
-          <h1 class="font-extrabold text-white text-base tracking-wide flex items-center gap-2">
-            ECLIPSE <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          </h1>
-          <p id="headerSubtitle" class="text-[11px] text-slate-400">Global Lounge</p>
-        </div>
-      </div>
+    <h1 style="font-size: 2.5rem; line-height: 1.2; margin: 0 0 14px 0; color: #1b1730; letter-spacing: -0.5px;">
+      🏂 OpenTricky - Ride the Classic Slopes Again
+    </h1>
 
-      <div class="flex items-center gap-2">
-        <button onclick="logout()" title="Logout" class="w-9 h-9 rounded-xl bg-darkCard hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-all border border-darkBorder active:scale-95">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
-      </div>
-    </header>
+    <p style="font-size: 1.12rem; margin: 0 auto 26px auto; max-width: 620px; color: #4a4a5e;">
+      OpenTricky is an unofficial PC port of SSX Tricky, made by static recompilation. Bring your own disc and play the legendary snowboarding game on a modern computer, with smoother performance and room for mods.
+    </p>
 
-    <!-- AUTH SCREEN -->
-    <div id="authScreen" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      <div class="w-full max-w-md glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden animate-slide-up border border-darkBorder">
-        <div class="text-center mb-6 relative">
-          <div class="w-20 h-20 mx-auto mb-3">
-            <img src="Eclipse.png" alt="Eclipse Logo" class="eclipse-logo-circle" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0b0e14/ffffff?text=E';">
-          </div>
-          <h2 class="text-2xl font-bold text-white tracking-tight">Welcome to Eclipse</h2>
-          <p class="text-xs text-slate-400 mt-1">Cloud connected messaging platform</p>
-        </div>
+    <a class="btn" href="https://github.com/Fan0tashi/OpenTricky"
+       style="display: inline-block; padding: 18px 42px; font-size: 1.15rem; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 14px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 55%, #f59e0b 100%); box-shadow: 0 10px 24px rgba(124, 58, 237, 0.35);">
+      ⬇️ Download OpenTricky
+    </a>
 
-        <div class="flex bg-eclipse-950 p-1 rounded-xl mb-6 border border-darkBorder">
-          <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-bold rounded-lg text-white bg-eclipse-600 shadow transition-all duration-200">Log In</button>
-          <button id="tabSignup" onclick="switchAuthTab('signup')" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-all duration-200">Sign Up</button>
-        </div>
+    <p style="margin: 18px 0 0 0; font-size: 0.9rem; color: #7b7b8f;">
+      Free and open source &middot; Windows, Linux and Steam Deck
+    </p>
+  </header>
 
-        <!-- Login Form -->
-        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username or Email</label>
-            <input type="text" id="loginUser" required placeholder="Enter username or email" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
-            <input type="password" id="loginPass" required minlength="6" maxlength="20" placeholder="••••••••" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
-          </div>
-          <button type="submit" class="w-full py-3 bg-eclipse-600 hover:bg-eclipse-500 active:scale-98 font-bold text-white text-xs rounded-xl shadow-lg shadow-eclipse-600/30 transition-all">
-            Sign In / Access
-          </button>
-        </form>
+  <section style="margin-top: 44px;">
+    <h2 style="font-size: 1.6rem; color: #1b1730; margin: 0 0 14px 0;">🚀 What Is OpenTricky?</h2>
+    <p style="margin: 0 0 16px 0;">
+      OpenTricky is a fan-made project that takes the original SSX Tricky game and rebuilds it so it can run natively on a PC. The technical term for the method used is "static recompilation," which simply means the original game code was translated ahead of time into something a modern computer understands. You do not need an emulator, and you do not need to configure complicated settings.
+    </p>
+    <p style="margin: 0 0 16px 0;">
+      The result is the same over-the-top snowboarding game you remember, with its wild tricks, colorful characters, and unforgettable soundtrack, but running natively on Windows with improved stability and much better frame rates. Because it is a native port, it also opens the door to modding, widescreen support, and modern graphics options.
+    </p>
+    <p style="margin: 0 0 16px 0;">
+      Important: OpenTricky does not include the game itself. You must own and provide your own copy of the SSX Tricky disc. The project only provides the program that runs the game, not the game files. This is what the phrase "bring your own disc" means.
+    </p>
+  </section>
 
-        <!-- Signup Form -->
-        <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-4 hidden">
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username (Case-insensitive)</label>
-            <input type="text" id="signupUser" required placeholder="e.g. Alex" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password (6-20 characters)</label>
-            <input type="password" id="signupPass" required minlength="6" maxlength="20" placeholder="••••••••" class="w-full px-3 py-2.5 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
-          </div>
-          <button type="submit" class="w-full py-3 bg-eclipse-600 hover:bg-eclipse-500 active:scale-98 font-bold text-white text-xs rounded-xl shadow-lg shadow-eclipse-600/30 transition-all">
-            Create Account
-          </button>
-        </form>
-      </div>
+  <section style="margin-top: 40px;">
+    <h2 style="font-size: 1.6rem; color: #1b1730; margin: 0 0 14px 0;">✨ What You Get</h2>
+    <ul style="margin: 0; padding-left: 22px;">
+      <li style="margin-bottom: 10px;"><strong>Native PC performance.</strong> No emulator overhead, so the game runs smoothly on modest hardware and scales up nicely on a gaming PC.</li>
+      <li style="margin-bottom: 10px;"><strong>Modern graphics options.</strong> Support for Direct3D 11 and Vulkan, so you can pick whichever renderer works best with your graphics card.</li>
+      <li style="margin-bottom: 10px;"><strong>Higher resolutions.</strong> Play in widescreen and at resolutions far beyond what the original console could output.</li>
+      <li style="margin-bottom: 10px;"><strong>Steam Deck friendly.</strong> Thanks to the Linux and Vulkan support, OpenTricky runs well on handheld gaming PCs.</li>
+      <li style="margin-bottom: 10px;"><strong>Modding support.</strong> Because the code is rebuilt for PC, the community can create and share modifications, from visual tweaks to gameplay changes.</li>
+      <li style="margin-bottom: 10px;"><strong>Open source.</strong> The whole project is public on GitHub, so anyone can inspect it, report issues, or contribute improvements.</li>
+    </ul>
+  </section>
+
+  <section style="margin-top: 40px;">
+    <h2 style="font-size: 1.6rem; color: #1b1730; margin: 0 0 14px 0;">💻 What Your Computer Needs</h2>
+    <p style="margin: 0 0 16px 0;">
+      OpenTricky is lightweight compared to most modern games, but you should still check that your computer meets these rough guidelines before you start.
+    </p>
+    <div style="background: #ffffff; border-radius: 14px; padding: 8px 22px; box-shadow: 0 4px 18px rgba(35, 28, 70, 0.06);">
+      <ul style="margin: 16px 0; padding-left: 22px;">
+        <li style="margin-bottom: 8px;"><strong>Operating system:</strong> Windows 10 or Windows 11 (64-bit), or a modern Linux distribution.</li>
+        <li style="margin-bottom: 8px;"><strong>Processor:</strong> A dual-core processor from the last ten years or so.</li>
+        <li style="margin-bottom: 8px;"><strong>Memory:</strong> 4 GB of RAM or more.</li>
+        <li style="margin-bottom: 8px;"><strong>Graphics:</strong> A graphics card that supports Direct3D 11 or Vulkan.</li>
+        <li style="margin-bottom: 8px;"><strong>Storage:</strong> Around 5 GB of free space for the port and your game files.</li>
+        <li style="margin-bottom: 8px;"><strong>Also required:</strong> Your own legally owned copy of the SSX Tricky disc.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section style="margin-top: 40px;">
+    <h2 style="font-size: 1.6rem; color: #1b1730; margin: 0 0 14px 0;">📥 Download and Setup</h2>
+    <p style="margin: 0 0 16px 0;">
+      Everything you need lives on the project's GitHub page. Visit this link to download the application. The page contains the latest release, along with notes explaining what changed in each version. Always take the newest release, since it will have the most fixes and the best compatibility.
+    </p>
+
+    <div style="text-align: center; margin: 26px 0;">
+      <a class="btn" href="https://github.com/Fan0tashi/OpenTricky"
+         style="display: inline-block; padding: 16px 38px; font-size: 1.08rem; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 14px; background: linear-gradient(135deg, #0ea5e9 0%, #7c3aed 60%, #ec4899 100%); box-shadow: 0 10px 24px rgba(14, 165, 233, 0.32);">
+        ⬇️ Get OpenTricky from GitHub
+      </a>
     </div>
 
-    <!-- MAIN APPLICATION CONTAINER -->
-    <main id="appContent" class="flex-1 flex flex-col min-h-0 relative hidden">
-      
-      <!-- TAB 1: GLOBAL CHAT VIEW -->
-      <section id="globalChatTab" class="flex-1 flex flex-col h-full min-h-0 animate-fade-in">
-        <div id="globalMessageFeed" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 flex flex-col-reverse">
-          <!-- Global Messages Rendered Here -->
-        </div>
+    <p style="margin: 0 0 12px 0;">Once you are on the page, follow these simple steps:</p>
+    <ol style="margin: 0 0 16px 0; padding-left: 22px;">
+      <li style="margin-bottom: 10px;">Open the link above in your web browser.</li>
+      <li style="margin-bottom: 10px;">Look for the Releases section on the right side of the page, or scroll down until you find it.</li>
+      <li style="margin-bottom: 10px;">Click the newest release and download the Windows package listed there.</li>
+      <li style="margin-bottom: 10px;">Save the file somewhere easy to find, such as your Downloads folder or Desktop.</li>
+      <li style="margin-bottom: 10px;">Follow the instructions included with the release to point OpenTricky at your own SSX Tricky disc or game files.</li>
+      <li style="margin-bottom: 10px;">Launch OpenTricky and start snowboarding.</li>
+    </ol>
+    <p style="margin: 0;">
+      If you are unsure which file to grab, the release notes usually name the correct one for Windows. Read them first; they are short and written for regular users.
+    </p>
+  </section>
+
+  <section style="margin-top: 40px;">
+    <h2 style="font-size: 1.6rem; color: #1b1730; margin: 0 0 14px 0;">🎮 First Launch Tips</h2>
+    <ul style="margin: 0; padding-left: 22px;">
+      <li style="margin-bottom: 10px;"><strong>Try the default graphics setting first.</strong> If the game looks or feels wrong, switch between Direct3D 11 and Vulkan in the settings to see which works better on your card.</li>
+      <li style="margin-bottom: 10px;"><strong>Use a controller if you have one.</strong> SSX Tricky was designed for a gamepad, and tricks feel far more natural with analog sticks.</li>
+      <li style="margin-bottom: 10px;"><strong>Set your resolution early.</strong> Choose a resolution that matches your monitor, then adjust the window mode to your liking.</li>
+      <li style="margin-bottom: 10px;"><strong>Keep your game files in one folder.</strong> Pointing OpenTricky at a stable, permanent folder avoids "file not found" errors later.</li>
+      <li style="margin-bottom: 10px;"><strong>Save often.</strong> As with any fan-made port, occasional quirks happen. Regular saves keep your progress safe.</li>
+    </ul>
+  </section>
+
+  <section style="margin-top: 40px;">
+    <h2 style="font-size: 1.6rem; color: #1b1730; margin: 0 0 14px 0;">🛠️ Modding and the Community</h2>
+    <p style="margin: 0 0 16px 0;">
+      One of the biggest advantages of a native PC port is that it is far easier to modify than the original console version. Community members have already started experimenting with texture replacements, custom soundtracks, and quality-of-life tweaks. Because the project is hosted on GitHub, you can browse the Issues and Discussions areas to see what other players are working on, ask questions, and share your own discoveries.
+    </p>
+    <p style="margin: 0;">
+      If you find a bug, reporting it on the GitHub page is genuinely helpful. Include what you were doing when the problem happened, what graphics card you have, and which version of OpenTricky you are running. Clear reports get fixed faster.
+    </p>
+  </section>
+
+  <section style="margin-top: 40px;">
+    <h2 style="font-size: 1.6rem; color: #1b1730; margin: 0 0 14px 0;">❓ Common Questions</h2>
+
+    <p style="margin: 0 0 6px 0;"><strong>Does OpenTricky include the game?</strong></p>
+    <p style="margin: 0 0 18px 0;">No. You need to own your own copy of SSX Tricky and provide the game files yourself. The port only supplies the program that runs the game.</p>
+
+    <p style="margin: 0 0 6px 0;"><strong>Is it free?</strong></p>
+    <p style="margin: 0 0 18px 0;">Yes, the port itself is free and open source. You still need a legitimate copy of the original game.</p>
+
+    <p style="margin: 0 0 6px 0;"><strong>Will it run on my laptop?</strong></p>
+    <p style="margin: 0 0 18px 0;">Most laptops from the past several years handle it comfortably, as long as the graphics chip supports Direct3D 11 or Vulkan.</p>
+
+    <p style="margin: 0 0 6px 0;"><strong>Can I play it on a Steam Deck?</strong></p>
+    <p style="margin: 0 0 18px 0;">Yes. Linux and Vulkan support make it a good fit for handheld gaming PCs.</p>
+
+    <p style="margin: 0 0 6px 0;"><strong>Is this an official release?</strong></p>
+    <p style="margin: 0">No. OpenTricky is an unofficial fan project and is not affiliated with the original game's publisher or developer.</p>
+  </section>
+
+  <section style="margin-top: 40px;">
+    <h2 style="font-size: 1.6rem; color: #1b1730; margin: 0 0 14px 0;">⚖️ A Note on Game Files</h2>
+    <p style="margin: 0;">
+      OpenTricky is a tool for running a game you already own. It does not distribute copyrighted game content, and downloading the port does not give you the game. To play, you must supply your own disc or an image of your own disc. Please respect the original creators and your local laws.
+    </p>
+  </section>
+
+  <footer style="margin-top: 48px; padding-top: 22px; border-top: 1px solid #e2e2ee; text-align: center; color: #7b7b8f; font-size: 0.92rem;">
+    <p style="margin: 0 0 10px 0;">
+      <a href="https://github.com/Fan0tashi/OpenTricky" style="font-weight: 600; text-decoration: none;">Visit the OpenTricky GitHub page</a>
+    </p>
+    <p style="margin: 0;">
+      Keywords: OpenTricky, SSX Tricky PC port, static recompilation, SSX Tricky download, snowboarding game PC, Direct3D 11, Vulkan, Linux, Steam Deck, Xbox, SSX, modding, PC port
+    </p>
+  </footer>
+
+</main>
 
-        <div class="p-3 bg-eclipse-950 border-t border-darkBorder shrink-0">
-          <form onsubmit="sendGlobalMessage(event)" class="flex items-center gap-2">
-            <input type="text" id="globalInput" placeholder="Type a message in Global Chat..." required autocomplete="off" class="flex-1 bg-darkCard border border-darkBorder rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all">
-            <button type="submit" class="w-11 h-11 rounded-2xl bg-eclipse-600 hover:bg-eclipse-500 active:scale-95 text-white flex items-center justify-center transition-all shadow-lg shadow-eclipse-600/30 shrink-0">
-              <i class="fa-solid fa-paper-plane text-sm"></i>
-            </button>
-          </form>
-        </div>
-      </section>
-
-      <!-- TAB 2: DMs & GROUP CHATS VIEW -->
-      <section id="dmsTab" class="flex-1 flex h-full min-h-0 animate-fade-in hidden">
-        <div id="dmSidebar" class="w-full sm:w-80 bg-robloxDark border-r border-darkBorder flex flex-col h-full shrink-0">
-          <div class="p-3.5 border-b border-darkBorder flex items-center justify-between">
-            <h2 class="text-sm font-bold text-white flex items-center gap-2">
-              <span>Messages</span>
-            </h2>
-            <button onclick="openCreateGroupModal()" class="px-2.5 py-1 bg-eclipse-600 hover:bg-eclipse-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow">
-              <i class="fa-solid fa-users"></i> + Group
-            </button>
-          </div>
-
-          <div class="p-2.5 border-b border-darkBorder/60">
-            <div class="relative">
-              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
-              <input type="text" id="dmSearchInput" oninput="filterDMSidebar()" placeholder="Search chats..." class="w-full bg-darkCard border border-darkBorder rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none">
-            </div>
-          </div>
-
-          <div id="dmConversationList" class="flex-1 overflow-y-auto divide-y divide-darkBorder/40">
-            <!-- Conversations Rendered Here -->
-          </div>
-        </div>
-
-        <div id="dmChatPanel" class="hidden sm:flex flex-1 flex-col h-full bg-eclipse-950 min-h-0">
-          <div id="dmHeader" class="p-3.5 bg-darkCard/80 border-b border-darkBorder flex items-center justify-between shrink-0">
-            <div class="flex items-center gap-2.5">
-              <button onclick="closeDMChatMobile()" class="sm:hidden text-slate-400 hover:text-white mr-1">
-                <i class="fa-solid fa-arrow-left"></i>
-              </button>
-              <div id="dmActiveAvatar" class="w-8 h-8 rounded-full bg-eclipse-600 text-white font-bold flex items-center justify-center text-xs overflow-hidden">?</div>
-              <div>
-                <h3 id="dmActiveUser" class="text-xs font-bold text-white">Select a Chat</h3>
-                <p id="dmActiveStatus" class="text-[10px] text-emerald-400">Active Channel</p>
-              </div>
-            </div>
-          </div>
-
-          <div id="dmMessageFeed" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 flex flex-col-reverse">
-            <div class="h-full flex flex-col items-center justify-center text-slate-500 py-12">
-              <i class="fa-regular fa-comments text-4xl mb-3 text-eclipse-500/40"></i>
-              <p class="text-xs font-medium">Select a conversation to start chatting</p>
-            </div>
-          </div>
-
-          <div class="p-3 bg-eclipse-950 border-t border-darkBorder shrink-0">
-            <form onsubmit="sendDirectMessage(event)" class="flex items-center gap-2">
-              <input type="text" id="dmInput" placeholder="Send a message..." disabled required autocomplete="off" class="flex-1 bg-darkCard border border-darkBorder rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-eclipse-500 transition-all disabled:opacity-50">
-              <button type="submit" id="dmSubmitBtn" disabled class="w-11 h-11 rounded-2xl bg-eclipse-600 hover:bg-eclipse-500 active:scale-95 text-white flex items-center justify-center transition-all shadow-lg shadow-eclipse-600/30 shrink-0 disabled:opacity-50">
-                <i class="fa-solid fa-paper-plane text-sm"></i>
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 3: FRIENDS TAB -->
-      <section id="friendsTab" class="flex-1 flex flex-col h-full overflow-hidden p-4 sm:p-6 space-y-4 animate-fade-in hidden min-h-0">
-        <!-- Search & Send Bar -->
-        <div class="glass-panel border border-darkBorder rounded-2xl p-4 shrink-0">
-          <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-            <i class="fa-solid fa-user-plus text-amber-400"></i> ADD FRIENDS BY EMAIL / USERNAME
-          </h3>
-          <div class="flex gap-2">
-            <input type="text" id="friendSearchInput" placeholder="Enter username or email..." class="flex-1 bg-eclipse-950 border border-darkBorder rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-eclipse-500">
-            <button onclick="searchAndAddFriend()" class="px-4 py-2 bg-eclipse-600 hover:bg-eclipse-500 text-white font-bold rounded-xl text-xs transition-all shadow shrink-0">
-              Send Request
-            </button>
-          </div>
-        </div>
-
-        <!-- Two Divided Lists Container -->
-        <div class="flex-1 flex flex-col gap-4 min-h-0 overflow-y-auto">
-          <!-- Section 1: Friend Requests -->
-          <div class="glass-panel border border-darkBorder rounded-2xl p-4 shrink-0">
-            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center justify-between">
-              <span><i class="fa-solid fa-clock mr-2"></i>FRIEND REQUESTS</span>
-              <span id="requestsCountBadge" class="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] rounded-full font-bold">0</span>
-            </h3>
-            <div id="friendRequestsList" class="space-y-2">
-              <p class="text-xs text-slate-500 text-center py-2">No pending friend requests.</p>
-            </div>
-          </div>
-
-          <!-- Section 2: My Friends -->
-          <div class="flex-1 flex flex-col glass-panel border border-darkBorder rounded-2xl p-4 min-h-0">
-            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center justify-between shrink-0">
-              <span><i class="fa-solid fa-user-group text-indigo-400 mr-2"></i>MY FRIENDS</span>
-              <span id="friendsCountBadge" class="px-2 py-0.5 bg-eclipse-600/30 text-eclipse-300 text-[10px] rounded-full font-bold">0</span>
-            </h3>
-
-            <div id="friendsHorizontalList" class="flex-1 overflow-y-auto space-y-2.5 pr-1">
-              <p class="text-xs text-slate-500 py-6 text-center">No friends added yet. Search by username or email above!</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 4: PROFILE & ADMIN VIEW -->
-      <section id="profileTab" class="flex-1 flex flex-col h-full overflow-y-auto p-4 sm:p-6 space-y-6 animate-fade-in hidden">
-        <div class="glass-panel border border-darkBorder rounded-3xl p-6 relative overflow-hidden shadow-2xl">
-          <div class="flex flex-col sm:flex-row items-center gap-6">
-            <div class="flex flex-col items-center">
-              <div class="relative w-24 h-24 mb-2">
-                <div id="profileAvatarContainer" class="w-24 h-24 rounded-full border-2 border-eclipse-500 flex items-center justify-center text-3xl font-extrabold shadow-xl overflow-hidden">
-                  ?
-                </div>
-              </div>
-            </div>
-
-            <div class="flex-1 text-center sm:text-left space-y-2">
-              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h2 id="profileUsername" class="text-2xl font-bold text-white tracking-tight">Username</h2>
-                <span id="profileAdminBadge" class="hidden px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 text-[10px] font-bold uppercase tracking-wider">
-                  <i class="fa-solid fa-shield"></i> Admin
-                </span>
-              </div>
-              <p id="profileEmail" class="text-xs text-slate-400 font-mono">email@eclipse.internal</p>
-              
-              <div class="flex items-center justify-center sm:justify-start gap-6 pt-3 border-t border-darkBorder/60">
-                <div class="text-center sm:text-left">
-                  <span id="statFriends" class="text-xl font-extrabold text-white block">0</span>
-                  <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Friends</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- BOTTOM TAB NAVIGATION -->
-    <nav id="bottomNav" class="hidden h-16 bg-eclipse-950 border-t border-darkBorder grid grid-cols-4 shrink-0 z-20">
-      <button id="navGlobal" onclick="switchMainTab('global')" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition-all tab-active">
-        <i class="fa-solid fa-earth-americas text-base"></i>
-        <span class="text-[10px] font-bold tracking-wide">Global</span>
-      </button>
-      <button id="navDMs" onclick="switchMainTab('dms')" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition-all">
-        <i class="fa-solid fa-comments text-base"></i>
-        <span class="text-[10px] font-bold tracking-wide">DMs & Groups</span>
-      </button>
-      <button id="navFriends" onclick="switchMainTab('friends')" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition-all">
-        <i class="fa-solid fa-user-group text-base"></i>
-        <span class="text-[10px] font-bold tracking-wide">Friends</span>
-      </button>
-      <button id="navProfile" onclick="switchMainTab('profile')" class="flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition-all">
-        <i class="fa-solid fa-user text-base"></i>
-        <span class="text-[10px] font-bold tracking-wide">Profile</span>
-      </button>
-    </nav>
-
-  </div>
-
-  <!-- CREATE GROUP CHAT MODAL -->
-  <div id="createGroupModal" class="fixed inset-0 bg-eclipse-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-panel border border-darkBorder rounded-3xl max-w-sm w-full p-6 shadow-2xl relative animate-slide-up">
-      <button onclick="closeCreateGroupModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-        <i class="fa-solid fa-xmark text-base"></i>
-      </button>
-      <h3 class="text-base font-bold text-white mb-4">Create Group Chat</h3>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Group Name</label>
-          <input type="text" id="groupNameInput" placeholder="e.g. Squad Chat" class="w-full px-3 py-2 bg-eclipse-950 border border-darkBorder rounded-xl text-xs text-white focus:outline-none focus:border-eclipse-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Select Friends to Add</label>
-          <div id="groupMembersSelection" class="max-h-40 overflow-y-auto space-y-1.5 p-2 bg-eclipse-950 rounded-xl border border-darkBorder">
-            <!-- Selectable friends listed here -->
-          </div>
-        </div>
-        <button onclick="confirmCreateGroup()" class="w-full py-2.5 bg-eclipse-600 hover:bg-eclipse-500 text-white font-bold rounded-xl text-xs transition-all shadow">
-          Create Group
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = 'https://qpqnmbhqjxtgoaekvqsa.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_hMYMiWm1ihQjc7L7tQSo6w_ZmWL_Q-H';
-    
-    let supabaseClient = null;
-    if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-
-    let currentUser = null;
-    let allUsersCache = [];
-    let activeTab = 'global';
-    let activeChatId = null;
-    let activeChatType = 'dm'; // 'dm' or 'group'
-    let groupsCache = JSON.parse(localStorage.getItem('eclipse_groups_cache') || '[]');
-
-    const colorPalette = ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899'];
-
-    function getAvatarColor(name) {
-      if (!name) return colorPalette[0];
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      return colorPalette[Math.abs(hash) % colorPalette.length];
-    }
-
-    function getAvatarIconHtml(userObj, sizeClasses = 'w-8 h-8 text-xs') {
-      const username = (typeof userObj === 'string' ? userObj : (userObj && userObj.username ? userObj.username : '?'));
-      const initial = username.charAt(0).toUpperCase();
-      const bg = getAvatarColor(username.toLowerCase());
-
-      return `<div class="${sizeClasses} rounded-full font-extrabold flex items-center justify-center shrink-0 shadow-md text-white" style="background-color: ${bg};">${initial}</div>`;
-    }
-
-    /* AUTHENTICATION */
-    function switchAuthTab(tab) {
-      const loginForm = document.getElementById('loginForm');
-      const signupForm = document.getElementById('signupForm');
-      const tabLogin = document.getElementById('tabLogin');
-      const tabSignup = document.getElementById('tabSignup');
-
-      if (tab === 'login') {
-        loginForm.classList.remove('hidden');
-        signupForm.classList.add('hidden');
-        tabLogin.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-white bg-eclipse-600 shadow transition-all duration-200';
-        tabSignup.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-all duration-200';
-      } else {
-        signupForm.classList.remove('hidden');
-        loginForm.classList.add('hidden');
-        tabSignup.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-white bg-eclipse-600 shadow transition-all duration-200';
-        tabLogin.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition-all duration-200';
-      }
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault();
-      const identifier = document.getElementById('loginUser').value.trim().toLowerCase().replace('@eclipse.internal', '');
-      const pass = document.getElementById('loginPass').value;
-
-      let user = null;
-      if (supabaseClient) {
-        const { data } = await supabaseClient.from('users').select('*').eq('username_lower', identifier).single();
-        user = data;
-      }
-
-      if (!user || user.password !== pass) {
-        showToast('Invalid credentials.', 'error');
-        return;
-      }
-
-      currentUser = user;
-      openApp();
-    }
-
-    async function handleSignup(e) {
-      e.preventDefault();
-      const username = document.getElementById('signupUser').value.trim();
-      const pass = document.getElementById('signupPass').value;
-      const lowerName = username.toLowerCase().replace('@eclipse.internal', '');
-
-      if (pass.length < 6 || pass.length > 20) {
-        showToast('Password must be 6-20 characters long.', 'error');
-        return;
-      }
-
-      if (supabaseClient) {
-        const { data: existing } = await supabaseClient.from('users').select('id').eq('username_lower', lowerName).single();
-        if (existing) {
-          showToast('Username is already taken!', 'error');
-          return;
-        }
-
-        const { data: allUsers } = await supabaseClient.from('users').select('id');
-        const role = (allUsers && allUsers.length === 0) || lowerName === 'testbot' ? 'Admin' : 'Member';
-
-        const { data: newUser, error } = await supabaseClient.from('users').insert([{
-          username: username,
-          username_lower: lowerName,
-          password: pass,
-          role: role
-        }]).select().single();
-
-        if (error) {
-          showToast('Failed to create account: ' + error.message, 'error');
-          return;
-        }
-
-        currentUser = newUser;
-        openApp();
-      }
-    }
-
-    function logout() {
-      currentUser = null;
-      location.reload();
-    }
-
-    function openApp() {
-      document.getElementById('authScreen').classList.add('hidden');
-      document.getElementById('appHeader').classList.remove('hidden');
-      document.getElementById('appContent').classList.remove('hidden');
-      document.getElementById('bottomNav').classList.remove('hidden');
-
-      setupRealtimeSubscriptions();
-      loadAllUsersCache();
-      switchMainTab('global');
-    }
-
-    async function loadAllUsersCache() {
-      if (supabaseClient) {
-        const { data } = await supabaseClient.from('users').select('*');
-        allUsersCache = data || [];
-      }
-    }
-
-    /* REALTIME SUBSCRIPTIONS */
-    function setupRealtimeSubscriptions() {
-      if (!supabaseClient) return;
-
-      try {
-        supabaseClient.channel('global_messages_realtime')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'global_messages' }, () => {
-            if (activeTab === 'global') renderGlobalMessages();
-          })
-          .subscribe((status, err) => {
-            if (err) console.log("Realtime connection notice: Falling back to HTTP polling mode.");
-          });
-
-        supabaseClient.channel('direct_messages_realtime')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'direct_messages' }, () => {
-            if (activeTab === 'dms') {
-              renderDMSidebar();
-              renderDMMessages();
-            }
-          })
-          .subscribe();
-
-        supabaseClient.channel('friendships_realtime')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, () => {
-            if (activeTab === 'friends') renderFriendsTab();
-            if (activeTab === 'profile') renderProfileTab();
-          })
-          .subscribe();
-      } catch (err) {
-        console.log("WebSocket restricted in canvas environment. Using cloud REST polling.");
-      }
-
-      // Fallback polling interval to ensure snappy multi-device sync without WebSockets
-      setInterval(() => {
-        if (!currentUser) return;
-        if (activeTab === 'global') renderGlobalMessages();
-        if (activeTab === 'dms') {
-          renderDMSidebar();
-          if (activeChatId) renderDMMessages();
-        }
-        if (activeTab === 'friends') renderFriendsTab();
-      }, 3000);
-    }
-
-    /* TAB NAVIGATION */
-    function switchMainTab(tab) {
-      activeTab = tab;
-      const globalTab = document.getElementById('globalChatTab');
-      const dmsTab = document.getElementById('dmsTab');
-      const friendsTab = document.getElementById('friendsTab');
-      const profileTab = document.getElementById('profileTab');
-      
-      const navGlobal = document.getElementById('navGlobal');
-      const navDMs = document.getElementById('navDMs');
-      const navFriends = document.getElementById('navFriends');
-      const navProfile = document.getElementById('navProfile');
-
-      [globalTab, dmsTab, friendsTab, profileTab].forEach(el => el.classList.add('hidden'));
-      [navGlobal, navDMs, navFriends, navProfile].forEach(el => el.classList.remove('tab-active'));
-
-      if (tab === 'global') {
-        globalTab.classList.remove('hidden');
-        navGlobal.classList.add('tab-active');
-        document.getElementById('headerSubtitle').innerText = 'Global Lounge';
-        renderGlobalMessages();
-      } else if (tab === 'dms') {
-        dmsTab.classList.remove('hidden');
-        navDMs.classList.add('tab-active');
-        document.getElementById('headerSubtitle').innerText = 'DMs & Groups';
-        renderDMSidebar();
-      } else if (tab === 'friends') {
-        friendsTab.classList.remove('hidden');
-        navFriends.classList.add('tab-active');
-        document.getElementById('headerSubtitle').innerText = 'Friends List';
-        renderFriendsTab();
-      } else if (tab === 'profile') {
-        profileTab.classList.remove('hidden');
-        navProfile.classList.add('tab-active');
-        document.getElementById('headerSubtitle').innerText = 'Profile';
-        renderProfileTab();
-      }
-    }
-
-    /* GLOBAL CHAT */
-    async function renderGlobalMessages() {
-      const feed = document.getElementById('globalMessageFeed');
-      feed.innerHTML = '';
-
-      if (!supabaseClient) return;
-      const { data: messages } = await supabaseClient.from('global_messages').select('*').order('created_at', { ascending: false });
-
-      if (!messages || messages.length === 0) {
-        feed.innerHTML = `
-          <div class="h-full flex flex-col items-center justify-center text-slate-500 py-12">
-            <i class="fa-regular fa-paper-plane text-4xl mb-3 text-eclipse-500/40"></i>
-            <p class="text-xs font-medium">No messages yet in Global Chat!</p>
-          </div>
-        `;
-        return;
-      }
-
-      messages.forEach(msg => {
-        const isMe = msg.sender_username.toLowerCase() === currentUser.username_lower;
-        const isAdmin = currentUser.role === 'Admin';
-        const avatarHtml = getAvatarIconHtml(msg.sender_username, 'w-6 h-6 text-[10px]');
-
-        const msgEl = document.createElement('div');
-        msgEl.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} group mb-2 animate-fade-in`;
-
-        msgEl.innerHTML = `
-          <div class="flex items-center gap-1.5 mb-1">
-            ${avatarHtml}
-            <span class="text-[11px] font-bold ${isMe ? 'text-eclipse-400' : 'text-indigo-400'}">
-              ${escapeHTML(msg.sender_username)}
-            </span>
-            <span class="text-[9px] text-slate-500 font-mono">${formatTime(msg.created_at)}</span>
-            ${isAdmin ? `
-              <button onclick="deleteGlobalMessage('${msg.id}')" title="Delete Message (Admin)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-[10px] ml-1 transition-all">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            ` : ''}
-          </div>
-          <div class="max-w-[85%] sm:max-w-[70%] px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${isMe ? 'bg-eclipse-600 text-white rounded-tr-none' : 'bg-darkCard text-slate-100 border border-darkBorder rounded-tl-none'} shadow-md">
-            ${escapeHTML(msg.content)}
-          </div>
-        `;
-        feed.appendChild(msgEl);
-      });
-    }
-
-    async function sendGlobalMessage(e) {
-      e.preventDefault();
-      const input = document.getElementById('globalInput');
-      const text = input.value.trim();
-      if (!text || !supabaseClient) return;
-
-      await supabaseClient.from('global_messages').insert([{
-        sender_username: currentUser.username,
-        sender_role: currentUser.role,
-        content: text
-      }]);
-
-      input.value = '';
-      renderGlobalMessages();
-    }
-
-    async function deleteGlobalMessage(msgId) {
-      if (!currentUser || currentUser.role !== 'Admin' || !supabaseClient) return;
-      await supabaseClient.from('global_messages').delete().eq('id', msgId);
-      renderGlobalMessages();
-    }
-
-    /* DMs & GROUP CHAT */
-    async function renderDMSidebar() {
-      const container = document.getElementById('dmConversationList');
-      container.innerHTML = '';
-
-      // Groups
-      groupsCache.forEach(group => {
-        if (!group.members.includes(currentUser.username_lower)) return;
-        const isActive = activeChatId === group.id && activeChatType === 'group';
-
-        const card = document.createElement('div');
-        card.className = `p-3 flex items-center gap-3 cursor-pointer transition-all ${isActive ? 'bg-darkCard border-l-4 border-eclipse-500' : 'hover:bg-darkCard/50'}`;
-        card.onclick = () => openGroupChat(group.id);
-
-        card.innerHTML = `
-          <div class="w-10 h-10 rounded-full bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-bold flex items-center justify-center text-sm shrink-0">
-            <i class="fa-solid fa-users text-xs"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <h4 class="text-xs font-bold text-slate-100 truncate">${escapeHTML(group.name)}</h4>
-            <p class="text-[11px] text-slate-400 truncate mt-0.5">Group Channel</p>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-
-      // Friends/Direct Messages
-      if (!supabaseClient) return;
-      const { data: friendships } = await supabaseClient.from('friendships')
-        .select('*')
-        .or(`user_a.eq.${currentUser.username_lower},user_b.eq.${currentUser.username_lower}`)
-        .eq('status', 'accepted');
-
-      if (friendships) {
-        friendships.forEach(f => {
-          const friendName = f.user_a === currentUser.username_lower ? f.user_b : f.user_a;
-          const isActive = activeChatId === friendName && activeChatType === 'dm';
-          const avatarHtml = getAvatarIconHtml(friendName, 'w-10 h-10 text-sm');
-
-          const card = document.createElement('div');
-          card.className = `p-3 flex items-center gap-3 cursor-pointer transition-all ${isActive ? 'bg-darkCard border-l-4 border-eclipse-500' : 'hover:bg-darkCard/50'}`;
-          card.onclick = () => openDMChat(friendName);
-
-          card.innerHTML = `
-            <div class="shrink-0">${avatarHtml}</div>
-            <div class="flex-1 min-w-0">
-              <h4 class="text-xs font-bold text-slate-100 truncate">${escapeHTML(friendName)}</h4>
-              <p class="text-[11px] text-slate-400 truncate mt-0.5">${escapeHTML(friendName)}@eclipse.internal</p>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-      }
-    }
-
-    function filterDMSidebar() {
-      const query = document.getElementById('dmSearchInput').value.toLowerCase();
-      const cards = document.querySelectorAll('#dmConversationList > div');
-      cards.forEach(card => {
-        const name = card.querySelector('h4').innerText.toLowerCase();
-        card.style.display = name.includes(query) ? 'flex' : 'none';
-      });
-    }
-
-    function openDMChat(targetName) {
-      activeChatId = targetName;
-      activeChatType = 'dm';
-      renderDMSidebar();
-
-      document.getElementById('dmActiveAvatar').innerHTML = getAvatarIconHtml(targetName, 'w-8 h-8 text-xs');
-      document.getElementById('dmActiveUser').innerText = targetName;
-      
-      document.getElementById('dmInput').disabled = false;
-      document.getElementById('dmSubmitBtn').disabled = false;
-
-      const chatPanel = document.getElementById('dmChatPanel');
-      chatPanel.classList.remove('hidden');
-      chatPanel.classList.add('flex');
-
-      renderDMMessages();
-    }
-
-    function openGroupChat(groupId) {
-      activeChatId = groupId;
-      activeChatType = 'group';
-      renderDMSidebar();
-
-      const group = groupsCache.find(g => g.id === groupId);
-      if (!group) return;
-
-      document.getElementById('dmActiveAvatar').innerHTML = `<div class="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs"><i class="fa-solid fa-users"></i></div>`;
-      document.getElementById('dmActiveUser').innerText = group.name;
-      
-      document.getElementById('dmInput').disabled = false;
-      document.getElementById('dmSubmitBtn').disabled = false;
-
-      const chatPanel = document.getElementById('dmChatPanel');
-      chatPanel.classList.remove('hidden');
-      chatPanel.classList.add('flex');
-
-      renderDMMessages();
-    }
-
-    function closeDMChatMobile() {
-      const chatPanel = document.getElementById('dmChatPanel');
-      chatPanel.classList.add('hidden');
-      chatPanel.classList.remove('flex');
-      activeChatId = null;
-      renderDMSidebar();
-    }
-
-    async function renderDMMessages() {
-      if (!activeChatId || !supabaseClient) return;
-      const feed = document.getElementById('dmMessageFeed');
-      feed.innerHTML = '';
-
-      let messages = [];
-      if (activeChatType === 'dm') {
-        const { data } = await supabaseClient.from('direct_messages')
-          .select('*')
-          .or(`and(sender_username.ilike.${currentUser.username_lower},receiver_username.ilike.${activeChatId}),and(sender_username.ilike.${activeChatId},receiver_username.ilike.${currentUser.username_lower})`)
-          .order('created_at', { ascending: false });
-        messages = data || [];
-      } else {
-        const { data } = await supabaseClient.from('direct_messages')
-          .select('*')
-          .eq('receiver_username', activeChatId)
-          .order('created_at', { ascending: false });
-        messages = data || [];
-      }
-
-      if (messages.length === 0) {
-        feed.innerHTML = `
-          <div class="h-full flex flex-col items-center justify-center text-slate-500 py-12">
-            <i class="fa-regular fa-paper-plane text-4xl mb-3 text-eclipse-500/40"></i>
-            <p class="text-xs font-medium">Send your first message!</p>
-          </div>
-        `;
-        return;
-      }
-
-      messages.forEach(msg => {
-        const isMe = msg.sender_username.toLowerCase() === currentUser.username_lower;
-
-        const msgEl = document.createElement('div');
-        msgEl.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} group mb-2 animate-fade-in`;
-
-        msgEl.innerHTML = `
-          <div class="flex items-center gap-1.5 mb-1">
-            ${activeChatType === 'group' && !isMe ? `<span class="text-[10px] font-bold text-indigo-400">${escapeHTML(msg.sender_username)}</span>` : ''}
-            <span class="text-[9px] text-slate-500 font-mono">${formatTime(msg.created_at)}</span>
-          </div>
-          <div class="max-w-[85%] sm:max-w-[70%] px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${isMe ? 'bg-eclipse-600 text-white rounded-tr-none' : 'bg-darkCard text-slate-100 border border-darkBorder rounded-tl-none'} shadow-md">
-            ${escapeHTML(msg.content)}
-          </div>
-          ${!isMe ? `
-            <div class="text-[9px] text-indigo-400 font-medium mt-0.5 flex items-center gap-1">
-              <i class="fa-solid fa-check-double text-[8px]"></i> Read
-            </div>
-          ` : ''}
-        `;
-        feed.appendChild(msgEl);
-      });
-    }
-
-    async function sendDirectMessage(e) {
-      e.preventDefault();
-      const input = document.getElementById('dmInput');
-      const text = input.value.trim();
-      if (!text || !activeChatId || !supabaseClient) return;
-
-      await supabaseClient.from('direct_messages').insert([{
-        sender_username: currentUser.username,
-        receiver_username: activeChatId,
-        content: text
-      }]);
-
-      input.value = '';
-      renderDMMessages();
-      renderDMSidebar();
-    }
-
-    /* FRIENDS TAB (REQUESTS & MY FRIENDS) */
-    function renderFriendsTab() {
-      renderFriendRequests();
-      renderMyFriendsList();
-    }
-
-    async function renderFriendRequests() {
-      const container = document.getElementById('friendRequestsList');
-      container.innerHTML = '';
-
-      if (!supabaseClient) return;
-      const { data: pendingRequests } = await supabaseClient.from('friendships')
-        .select('*')
-        .eq('user_b', currentUser.username_lower)
-        .eq('status', 'pending');
-
-      document.getElementById('requestsCountBadge').innerText = pendingRequests ? pendingRequests.length : 0;
-
-      if (!pendingRequests || pendingRequests.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500 text-center py-2">No pending friend requests.</p>`;
-        return;
-      }
-
-      pendingRequests.forEach(req => {
-        const senderName = req.user_a;
-        const avatarHtml = getAvatarIconHtml(senderName, 'w-9 h-9 text-xs');
-
-        const card = document.createElement('div');
-        card.className = 'flex items-center justify-between bg-eclipse-950 p-2.5 rounded-xl border border-darkBorder hover:border-amber-500/30 transition-all';
-        card.innerHTML = `
-          <div class="flex items-center gap-3">
-            ${avatarHtml}
-            <div>
-              <h4 class="text-xs font-bold text-white">${escapeHTML(senderName)}</h4>
-              <p class="text-[10px] text-slate-400 font-mono">${escapeHTML(senderName)}@eclipse.internal</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="respondFriendRequest('${req.id}', 'accepted')" title="Accept Request" class="w-8 h-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-xs transition-all active:scale-95">
-              <i class="fa-solid fa-check"></i>
-            </button>
-            <button onclick="respondFriendRequest('${req.id}', 'rejected')" title="Decline Request" class="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 flex items-center justify-center text-xs transition-all active:scale-95">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    async function renderMyFriendsList() {
-      const container = document.getElementById('friendsHorizontalList');
-      container.innerHTML = '';
-
-      if (!supabaseClient) return;
-      const { data: friendsData } = await supabaseClient.from('friendships')
-        .select('*')
-        .or(`user_a.eq.${currentUser.username_lower},user_b.eq.${currentUser.username_lower}`)
-        .eq('status', 'accepted');
-
-      document.getElementById('friendsCountBadge').innerText = friendsData ? friendsData.length : 0;
-
-      if (!friendsData || friendsData.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500 py-6 text-center">No friends added yet. Search by username or email above!</p>`;
-        return;
-      }
-
-      friendsData.forEach(f => {
-        const friendName = f.user_a === currentUser.username_lower ? f.user_b : f.user_a;
-        const avatarHtml = getAvatarIconHtml(friendName, 'w-10 h-10 text-sm');
-
-        const bar = document.createElement('div');
-        bar.className = 'flex items-center justify-between bg-eclipse-950 p-3 rounded-xl border border-darkBorder hover:border-eclipse-500/40 transition-all';
-        bar.innerHTML = `
-          <div class="flex items-center gap-3">
-            ${avatarHtml}
-            <div>
-              <h4 class="text-xs font-bold text-white leading-tight">${escapeHTML(friendName)}</h4>
-              <p class="text-[10px] text-slate-400 font-mono">${escapeHTML(friendName)}@eclipse.internal</p>
-            </div>
-          </div>
-          <button onclick="startDMFromFriend('${friendName}')" class="px-3.5 py-1.5 bg-eclipse-600 hover:bg-eclipse-500 text-white rounded-xl text-xs font-bold transition-all shadow flex items-center gap-1.5">
-            <i class="fa-solid fa-paper-plane text-[10px]"></i> Message
-          </button>
-        `;
-        container.appendChild(bar);
-      });
-    }
-
-    async function searchAndAddFriend() {
-      let query = document.getElementById('friendSearchInput').value.trim().toLowerCase();
-      if (!query || !supabaseClient) return;
-
-      const targetName = query.replace('@eclipse.internal', '');
-
-      if (targetName === currentUser.username_lower) {
-        showToast("You can't add yourself as a friend!", 'error');
-        return;
-      }
-
-      const { data: targetUser } = await supabaseClient.from('users').select('*').eq('username_lower', targetName).single();
-      if (!targetUser) {
-        showToast('User not found.', 'error');
-        return;
-      }
-
-      const { data: existing } = await supabaseClient.from('friendships')
-        .select('*')
-        .or(`and(user_a.eq.${currentUser.username_lower},user_b.eq.${targetName}),and(user_a.eq.${targetName},user_b.eq.${currentUser.username_lower})`);
-
-      if (existing && existing.length > 0) {
-        showToast('Friend request or friendship already exists!', 'info');
-        return;
-      }
-
-      await supabaseClient.from('friendships').insert([{
-        user_a: currentUser.username_lower,
-        user_b: targetName,
-        status: 'pending'
-      }]);
-
-      document.getElementById('friendSearchInput').value = '';
-      showToast(`Sent friend request to ${targetUser.username}!`, 'success');
-      renderFriendsTab();
-    }
-
-    async function respondFriendRequest(requestId, status) {
-      if (!supabaseClient) return;
-      if (status === 'accepted') {
-        await supabaseClient.from('friendships').update({ status: 'accepted' }).eq('id', requestId);
-        showToast('Friend request accepted!', 'success');
-      } else {
-        await supabaseClient.from('friendships').delete().eq('id', requestId);
-        showToast('Friend request declined.', 'info');
-      }
-      renderFriendsTab();
-    }
-
-    function startDMFromFriend(friendName) {
-      switchMainTab('dms');
-      openDMChat(friendName);
-    }
-
-    /* GROUP CHAT MODAL LOGIC */
-    async function openCreateGroupModal() {
-      const container = document.getElementById('groupMembersSelection');
-      container.innerHTML = '';
-
-      if (!supabaseClient) return;
-      const { data: friendsData } = await supabaseClient.from('friendships')
-        .select('*')
-        .or(`user_a.eq.${currentUser.username_lower},user_b.eq.${currentUser.username_lower}`)
-        .eq('status', 'accepted');
-
-      if (!friendsData || friendsData.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500 p-2 text-center">Add some friends first!</p>`;
-      } else {
-        friendsData.forEach(f => {
-          const friendName = f.user_a === currentUser.username_lower ? f.user_b : f.user_a;
-          container.innerHTML += `
-            <label class="flex items-center gap-2 text-xs text-slate-200 p-1.5 hover:bg-darkCard rounded-lg cursor-pointer">
-              <input type="checkbox" value="${friendName}" class="group-friend-checkbox rounded accent-indigo-500">
-              <span>${escapeHTML(friendName)}</span>
-            </label>
-          `;
-        });
-      }
-      document.getElementById('createGroupModal').classList.remove('hidden');
-    }
-
-    function closeCreateGroupModal() {
-      document.getElementById('createGroupModal').classList.add('hidden');
-    }
-
-    function confirmCreateGroup() {
-      const name = document.getElementById('groupNameInput').value.trim();
-      if (!name) return showToast('Enter a group name.', 'error');
-
-      const checkboxes = document.querySelectorAll('.group-friend-checkbox:checked');
-      const selectedNames = Array.from(checkboxes).map(cb => cb.value);
-      selectedNames.push(currentUser.username_lower);
-
-      const newGroup = {
-        id: 'grp_' + Date.now(),
-        name: name,
-        members: selectedNames,
-        createdBy: currentUser.username_lower
-      };
-
-      groupsCache.push(newGroup);
-      localStorage.setItem('eclipse_groups_cache', JSON.stringify(groupsCache));
-      closeCreateGroupModal();
-      showToast(`Group "${name}" created!`, 'success');
-      renderDMSidebar();
-      openGroupChat(newGroup.id);
-    }
-
-    /* PROFILE VIEW */
-    async function renderProfileTab() {
-      if (!currentUser) return;
-
-      document.getElementById('profileAvatarContainer').innerHTML = getAvatarIconHtml(currentUser, 'w-full h-full text-3xl');
-      document.getElementById('profileUsername').innerText = currentUser.username;
-      document.getElementById('profileEmail').innerText = `${currentUser.username_lower}@eclipse.internal`;
-
-      const adminBadge = document.getElementById('profileAdminBadge');
-      if (currentUser.role === 'Admin') adminBadge.classList.remove('hidden');
-      else adminBadge.classList.add('hidden');
-
-      if (supabaseClient) {
-        const { data: friendsData } = await supabaseClient.from('friendships')
-          .select('*')
-          .or(`user_a.eq.${currentUser.username_lower},user_b.eq.${currentUser.username_lower}`)
-          .eq('status', 'accepted');
-        document.getElementById('statFriends').innerText = friendsData ? friendsData.length : 0;
-      }
-    }
-
-    /* HELPERS */
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      
-      let bg = 'bg-darkCard border-darkBorder text-slate-200';
-      if (type === 'success') bg = 'bg-emerald-950/90 border-emerald-600/50 text-emerald-200';
-      if (type === 'error') bg = 'bg-red-950/90 border-red-600/50 text-red-200';
-
-      toast.className = `p-3.5 rounded-2xl border ${bg} shadow-2xl text-xs font-bold flex items-center justify-between transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto backdrop-blur-md`;
-      toast.innerHTML = `
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()" class="ml-3 text-slate-400 hover:text-white">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      `;
-
-      container.appendChild(toast);
-      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
-      setTimeout(() => {
-        toast.classList.add('opacity-0');
-        setTimeout(() => toast.remove(), 300);
-      }, 3500);
-    }
-
-    function formatTime(timestamp) {
-      return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function escapeHTML(str) {
-      return String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-    }
-  </script>
 </body>
 </html>
